@@ -15,7 +15,7 @@ enum ERRORS {
 int main(int argc, const char* argv[]) {
     
     char buff[PATH_MAX];
-    size_t size_of_all_files = 0;
+    int64_t size_of_all_files = 0;
 
     struct stat file_stat_info;
 
@@ -37,7 +37,7 @@ int main(int argc, const char* argv[]) {
 
     }
     
-    printf("%zu", size_of_all_files);
+    printf("%lld", size_of_all_files);
 
     return 0;
 }
