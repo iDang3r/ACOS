@@ -34,7 +34,7 @@ int main(int argc, const char* argv[]) {
         goto close_file;
     }
 
-    char* buff = (char*)mmap
+    void* buff = mmap
                       ( NULL,               // address will be selected by the system
                                             // (to determine the starting address of the mapping)
                         file_stat.st_size,  // size of file
