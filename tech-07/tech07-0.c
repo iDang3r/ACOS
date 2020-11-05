@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +40,8 @@ int main(int argc, char* argv[])
         close(pipe_fds[1]);
 
         execlp(argv[1], argv[1], NULL);
+        perror("exec");
+        exit(1);
 
     } else {
 

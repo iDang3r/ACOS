@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,8 @@ int main(int argc, char* argv[])
         close(pipe_fds[1]);
 
         execlp(argv[1], argv[1], NULL);
+        perror("exec_1");
+        exit(1);
     }
 
     pid = fork();
@@ -46,6 +49,9 @@ int main(int argc, char* argv[])
         close(pipe_fds[0]);
 
         execlp(argv[2], argv[2], NULL);
+
+        perror("exec_2");
+        exit(1);
     }
 
     close(pipe_fds[0]);
