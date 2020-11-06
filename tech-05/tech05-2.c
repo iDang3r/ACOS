@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
         if (pid == 0) {
             int scanf_ret = scanf("%*s");
             fflush(stdin);
-            return scanf_retls != EOF;
+            return scanf_ret != EOF;
         } else {
             waitpid(pid, &status, 0);
             ret_code = WEXITSTATUS(status);
