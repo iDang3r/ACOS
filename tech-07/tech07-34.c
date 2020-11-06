@@ -20,15 +20,20 @@ enum desriptors {
     STDERR = 2,
 };
 
-pid_t launch(char* command, int pipe_1[2], int pipe_2[2])
+pid_t launch(char* command, int in_fd, int out_fd)
 {
-    dup2(pipe_1[0], STDIN);
-    close(pipe_1[0]);
-
-    pipe(pipe_2);
-
     pid_t pid = fork();
-    if (0 == pid) {
+    if (pid == 0) {
+        if (in_fd != STDIN) {
+            dup2(in_fd, STDIN);
+            close(in_fd);
+        }
+
+        if (out_fd != STDOUT) {
+            dup2(out_fd, STDOUT);
+            close(out_fd);
+        }
+
         execlp(command, command, NULL);
         perror("fork");
     }
@@ -41,14 +46,26 @@ int main(int argc, char* argv[])
     if (argc < 2) {
         return UNKNOWN_ERROR;
     }
-    
-    int pipes[2][2] = {{0, 0}, {0, 1}};
+    pid_t pid = -1;
+    int status = 0;
 
-    launch(argv[1], pipes[1], pipes[0]);
-    for (int i = 2; i < argc - 1; ++i) {
-        launch(argv[i], pipes[i & 1], pipes[1 - (i & 1)]);
+    int pipes[2][2];
+    pipes[1][0] = STDIN;
+
+    for (int i = 1; i < argc - 1; ++i) {
+        pipe(pipes[1 - (i & 1)]);
+
+        pid = launch(argv[i], pipes[i & 1][0], pipes[1 - (i & 1)][1]);
+        close(pipes[1 - (i & 1)][1]);
+
+        waitpid(pid, &status, 0);
+
+        close(pipes[i & 1][0]);
+        close(pipes[i & 1][1]);
     }
-    launch(argv[argc - 1], pipes[1 - (argc & 1)], pipes[argc & 1]);
+    pipes[argc & 1][1] = 1;
+    pid = launch(argv[argc - 1], pipes[1 - (argc & 1)][0], STDOUT);
+    waitpid(pid, &status, 0);
 
     for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j) {

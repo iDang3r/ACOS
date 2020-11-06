@@ -16,7 +16,9 @@ int main(int argc, char* argv[])
         pid = fork();
 
         if (pid == 0) {
-            return scanf("%*s") != EOF;
+            int scanf_ret = scanf("%*s");
+            fflush(stdin);
+            return scanf_retls != EOF;
         } else {
             waitpid(pid, &status, 0);
             ret_code = WEXITSTATUS(status);
