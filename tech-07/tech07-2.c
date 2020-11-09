@@ -41,6 +41,7 @@ int main(int argc, char* argv[])
 
         execlp("gcc", "gcc", /*"-Wall",*/ argv[1], NULL);
         perror("exec_gcc");
+        exit(1);
     }
 
     close(pipe_fds[1]);

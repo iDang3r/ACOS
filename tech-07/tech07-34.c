@@ -35,7 +35,8 @@ pid_t launch(char* command, int in_fd, int out_fd)
         }
 
         execlp(command, command, NULL);
-        perror("fork");
+        perror("execlp");
+        exit(1);
     }
 
     return pid;
