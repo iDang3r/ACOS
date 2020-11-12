@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     sigaction(SIGRTMIN, &sig_act, NULL);
 
     sig_act.sa_handler = handler;
-    for (int i = SIGRTMIN + 1; i < SIGRTMAX; ++i) {
+    for (int i = SIGRTMIN + 1; i <= SIGRTMAX; ++i) {
         sigaction(i, &sig_act, NULL);
     }
 
