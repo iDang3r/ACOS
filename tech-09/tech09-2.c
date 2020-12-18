@@ -30,7 +30,7 @@ void handler_exit(int num)
     }
 }
 
-int main(int argc, char* argv[])
+void set_handler()
 {
     // set SIGINT and SIGTERM
     struct sigaction sig_exit;
@@ -38,7 +38,10 @@ int main(int argc, char* argv[])
     sig_exit.sa_flags = SA_RESTART;
     sigaction(SIGINT, &sig_exit, NULL);
     sigaction(SIGTERM, &sig_exit, NULL);
+}
 
+int create_socket_to_listen(const char* port)
+{
     int sock = socket(PF_INET, SOCK_STREAM, 0);
     if (-1 == sock) {
         perror("socket");
@@ -47,7 +50,7 @@ int main(int argc, char* argv[])
 
     struct sockaddr_in sockadr;
     sockadr.sin_family = AF_INET;
-    sockadr.sin_port = htons(strtol(argv[1], NULL, 10));
+    sockadr.sin_port = htons(strtol(port, NULL, 10));
     sockadr.sin_addr.s_addr = inet_addr(localhost);
 
     int code = bind(sock, (struct sockaddr*)&sockadr, sizeof(sockadr));
@@ -61,6 +64,15 @@ int main(int argc, char* argv[])
         perror("listen");
         exit(3);
     }
+
+    return sock;
+}
+
+int main(int argc, char* argv[])
+{
+    set_handler();
+
+    int sock = create_socket_to_listen(argv[1]);
 
     char buff[BUFF_SIZE];
     char file_name[FILENAME_MAX];
@@ -88,7 +100,7 @@ int main(int argc, char* argv[])
         snprintf(full_path, sizeof(full_path), "%s/%s", argv[2], file_name);
         printf("%s\n", full_path);
 
-        code = access(full_path, F_OK);
+        int code = access(full_path, F_OK);
         if (-1 == code) {
             dprintf(client_sock, "HTTP/1.1 404 Not Found\r\n");
             // printf("HTTP/1.1 404 Not Found\r\n");

@@ -86,7 +86,7 @@ void open_filesystem(const char* src)
     free(source);
 }
 
-int my_stat(const char* path, struct stat* st, struct fuse_file_info* fi)
+char* get_last_path(const char* path)
 {
     struct timespec last_time;
     memset(&last_time, 0, sizeof(last_time));
@@ -111,6 +111,13 @@ int my_stat(const char* path, struct stat* st, struct fuse_file_info* fi)
             }
         }
     }
+
+    return last_path;
+}
+
+int my_stat(const char* path, struct stat* st, struct fuse_file_info* fi)
+{
+    char* last_path = get_last_path(path);
 
     if (last_path == NULL) {
         return -ENOENT;
@@ -201,29 +208,7 @@ int my_read(
     off_t off,
     struct fuse_file_info* fi)
 {
-    struct timespec last_time;
-    memset(&last_time, 0, sizeof(last_time));
-
-    char* last_path = NULL;
-
-    for (int i = 0; i < folders_count; ++i) {
-        char* curr_dir = concat(folders[i], path);
-
-        struct stat st_;
-        memset(&st_, 0, sizeof(st_));
-
-        if (0 == stat(curr_dir, &st_)) {
-            if (st_.st_mtime > last_time.tv_sec) {
-                last_time.tv_sec = st_.st_mtime;
-                if (last_path != NULL) {
-                    free(last_path);
-                }
-                last_path = curr_dir;
-            } else {
-                free(curr_dir);
-            }
-        }
-    }
+    char* last_path = get_last_path(path);
 
     if (last_path == NULL) {
         return -ENOENT;
@@ -254,29 +239,7 @@ int my_read(
 
 int my_open(const char* path, struct fuse_file_info* fi)
 {
-    struct timespec last_time;
-    memset(&last_time, 0, sizeof(last_time));
-
-    char* last_path = NULL;
-
-    for (int i = 0; i < folders_count; ++i) {
-        char* curr_dir = concat(folders[i], path);
-
-        struct stat st_;
-        memset(&st_, 0, sizeof(st_));
-
-        if (0 == stat(curr_dir, &st_)) {
-            if (st_.st_mtime > last_time.tv_sec) {
-                last_time.tv_sec = st_.st_mtime;
-                if (last_path != NULL) {
-                    free(last_path);
-                }
-                last_path = curr_dir;
-            } else {
-                free(curr_dir);
-            }
-        }
-    }
+    char* last_path = get_last_path(path);
 
     if (last_path == NULL) {
         return -ENOENT;
